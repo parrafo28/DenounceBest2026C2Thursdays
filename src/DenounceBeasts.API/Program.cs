@@ -16,7 +16,7 @@ app.UseAuthorization();
 
 if(app.Environment.IsDevelopment())
 {
-    app.UseSwagger();//This is swagger init
+    app.UseSwagger();
     app.UseSwaggerUI();
 }
 
