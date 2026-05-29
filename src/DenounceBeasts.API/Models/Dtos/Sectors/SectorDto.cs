@@ -1,6 +1,6 @@
-﻿namespace DenounceBeasts.API.Models
+﻿namespace DenounceBeasts.API.Models.Entities
 {
-    public class Sector
+    public class SectorDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
