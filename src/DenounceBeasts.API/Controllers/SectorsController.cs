@@ -1,4 +1,5 @@
-﻿using DenounceBeasts.API.Models;
+﻿using DenounceBeasts.API.Models.Dtos.Sectors;
+using DenounceBeasts.API.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DenounceBeasts.API.Controllers;
@@ -16,14 +17,14 @@ public class SectorsController : ControllerBase
         };
 
     [HttpGet]
-    public ActionResult<IEnumerable<Sector>> GetSectors()
+    public ActionResult<IEnumerable<SectorDto>> GetSectors()
     {
         return Ok(_sectors);
     }
 
     [HttpGet]
     [Route("{id}")]
-    public ActionResult<Sector> GetSectorById(int id)
+    public ActionResult<SectorDto> GetSectorById(int id)
     {
         var sector = _sectors.FirstOrDefault(s => s.Id == id);
         if (sector == null)
@@ -34,10 +35,18 @@ public class SectorsController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Sector> CreateSector(Sector sector)
+    public ActionResult<Sector> CreateSector(CreateSectorDto request)
     {
+        var sector = new Sector
+        {
+            Name = request.Name,
+            MunicipalityId = request.MunicipalityId,
+            IsActive = true
+        };
+
         sector.Id = _sectors.Max(s => s.Id) + 1;
         _sectors.Add(sector);
+
         return CreatedAtAction(nameof(GetSectorById), new { id = sector.Id }, sector);
     }
 
