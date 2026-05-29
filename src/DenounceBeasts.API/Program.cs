@@ -16,7 +16,7 @@ app.UseAuthorization();
 
 if(app.Environment.IsDevelopment())
 {
-    app.UseSwagger();//another comment 
+    app.UseSwagger();
     app.UseSwaggerUI();
 }
 
