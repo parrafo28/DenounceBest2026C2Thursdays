@@ -1,67 +1,116 @@
-﻿using DenounceBeasts.API.Models.Dtos.Sectors;
+﻿using AutoMapper;
+using DenounceBeasts.API.Data;
+using DenounceBeasts.API.Models.Dtos.Sectors;
 using DenounceBeasts.API.Models.Entities;
+using DenounceBeasts.API.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DenounceBeasts.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SectorsController : ControllerBase
+public class SectorsController : BaseController
 {
+    private readonly DataContext _context;
+    //private readonly IMapper _mapper;
 
-    private static readonly List<Sector> _sectors = new List<Sector>
-        {
-            new Sector { Id = 1, Name = "Zona Colonial", MunicipalityId = 1, IsActive = true },
-            new Sector { Id = 2, Name = "Gascue", MunicipalityId = 1, IsActive = true },
-            new Sector { Id = 3, Name = "Cienfuegos", MunicipalityId = 2, IsActive = true }
-        };
+    public SectorsController(DataContext dataContext, IMapper mapper) : base(dataContext, mapper)
+    {
+        _context = dataContext;
+        //_mapper = mapper;
+    }
+
 
     [HttpGet]
-    public ActionResult<IEnumerable<SectorDto>> GetSectors()
+    public ApiResponse<IEnumerable<SectorDto>> GetSectors()
     {
-        return Ok(_sectors);
+        //var _sectors = _context.Sectors.ToList(); 
+        var _sectors = _context.Sectors.Include(p => p.Municipality).ToList();
+        //var _municipalities = _context.Municipalities.ToList();
+        //var response = _sectors.Select(s => new SectorDto
+        //{
+        //    Id = s.Id,
+        //    Name = s.Name,
+        //    MunicipalityId = s.MunicipalityId,
+        //    IsActive = s.IsActive,
+        //    //MunicipalityName = _context.Municipalities
+        //    //.FirstOrDefault(m => m.Id == s.MunicipalityId)?.Name
+        //    //MunicipalityName = _municipalities
+        //    //.FirstOrDefault(m => m.Id == s.MunicipalityId)?.Name
+        //    //MunicipalityName = s.Municipality.Name
+        //    //MunicipalityName = s.Municipality != null ? s.Municipality.Name : string.Empty
+        //    MunicipalityName = (s.Municipality == null) ? string.Empty : s.Municipality.Name
+        //}).ToList();
+
+        //var result = Mapper.Map<List<SectorDto>>(_sectors);
+        //var response = ApiResponse<IEnumerable<SectorDto>>.SuccessResponse(result);
+        //return response ;
+        //return ApiResponse<IEnumerable<SectorDto>>.SuccessResponse(result);
+        return ApiResponse<IEnumerable<SectorDto>>
+            .SuccessResponse(Mapper.Map<List<SectorDto>>(_sectors));
+
     }
 
     [HttpGet]
     [Route("{id}")]
-    public ActionResult<SectorDto> GetSectorById(int id)
+    public ApiResponse<SectorDto> GetSectorById(int id)
     {
-        var sector = _sectors.FirstOrDefault(s => s.Id == id);
+        var sector = _context.Sectors.FirstOrDefault(s => s.Id == id);
         if (sector == null)
         {
-            return NotFound();
+            //return NotFound();
+            return ApiResponse<SectorDto>.FailureResponse("Sector not found", 404);
+
         }
-        return Ok(sector);
+        //var response = new SectorDto
+        //{
+        //    Id = sector.Id,
+        //    Name = sector.Name,
+        //    MunicipalityId = sector.MunicipalityId,
+        //    IsActive = sector.IsActive,
+        //    Deleted = sector.Deleted
+        //};
+        //var response = Mapper.Map<SectorDto>(sector);
+        //return Ok(response);
+
+        return ApiResponse<SectorDto>.SuccessResponse(Mapper.Map<SectorDto>(sector));
     }
 
     [HttpPost]
-    public ActionResult<Sector> CreateSector(CreateSectorDto request)
+    public ApiResponse<int> CreateSector(CreateSectorDto request)
     {
-        var sector = new Sector
-        {
-            Name = request.Name,
-            MunicipalityId = request.MunicipalityId,
-            IsActive = true
-        };
+        //var sector = new Sector
+        //{
+        //    Name = request.Name,
+        //    MunicipalityId = request.MunicipalityId,
+        //    IsActive = true
+        //};
+        var sector = Mapper.Map<Sector>(request);
 
-        sector.Id = _sectors.Max(s => s.Id) + 1;
-        _sectors.Add(sector);
+        _context.Sectors.Add(sector);
+        _context.SaveChanges();
 
-        return CreatedAtAction(nameof(GetSectorById), new { id = sector.Id }, sector);
+        //return Ok(new { Id = sector.Id });
+        return ApiResponse<int>.SuccessResponse(sector.Id);
     }
 
     [HttpPut]
     [Route("{id}")]
-    public ActionResult UpdateSector(int id, Sector updatedSector)
+    public ActionResult UpdateSector(int id, SectorDto request)
     {
-        var sector = _sectors.FirstOrDefault(s => s.Id == id);
+        var sector = _context.Sectors.FirstOrDefault(s => s.Id == id);
         if (sector == null)
         {
             return NotFound();
         }
-        sector.Name = updatedSector.Name;
-        sector.MunicipalityId = updatedSector.MunicipalityId;
-        sector.IsActive = updatedSector.IsActive;
+
+        sector.Name = request.Name;
+        sector.MunicipalityId = request.MunicipalityId;
+        sector.IsActive = request.IsActive;
+
+        _context.Sectors.Update(sector);
+        _context.SaveChanges();
         return NoContent();
     }
 
@@ -69,12 +118,13 @@ public class SectorsController : ControllerBase
     [Route("{id}")]
     public ActionResult DeleteSector(int id)
     {
-        var sector = _sectors.FirstOrDefault(s => s.Id == id);
+        var sector = _context.Sectors.FirstOrDefault(s => s.Id == id);
         if (sector == null)
         {
             return NotFound();
         }
-        _sectors.Remove(sector);
+        _context.Sectors.Remove(sector);
+        _context.SaveChanges();
         return NoContent();
     }
 
