@@ -1,4 +1,4 @@
-﻿using DenounceBeasts.API.Models.Entities;
+﻿using DenounceBeasts.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DenounceBeasts.API.Controllers
@@ -25,7 +25,7 @@ namespace DenounceBeasts.API.Controllers
         [Route("get-ordered")]
         public ActionResult<IEnumerable<Municipality>> GetAllOrderes()
         {
-            return Ok(_municipalities.OrderBy(p=> p.Name));
+            return Ok(_municipalities.OrderBy(p => p.Name));
 
         }
 
@@ -102,7 +102,7 @@ namespace DenounceBeasts.API.Controllers
             }
             _municipalities.Remove(municipality);
             return NoContent();
-        } 
+        }
 
     }
 }

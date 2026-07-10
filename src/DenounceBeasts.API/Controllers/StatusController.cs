@@ -1,6 +1,6 @@
-﻿using DenounceBeasts.API.Data;
-using DenounceBeasts.API.Models.Dtos;
-using DenounceBeasts.API.Models.Entities;
+﻿using DenounceBeasts.Application.Models.Dtos;
+using DenounceBeasts.Domain.Entities;
+using DenounceBeasts.Infraestructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DenounceBeasts.API.Controllers;
@@ -10,15 +10,18 @@ namespace DenounceBeasts.API.Controllers;
 public class StatusController : ControllerBase
 {
     private readonly DataContext _context;
-    public StatusController(DataContext dataContext)
+    private readonly StatusRepository _repository;
+
+    public StatusController(DataContext dataContext, StatusRepository repository)
     {
         _context = dataContext;
+        this._repository = repository;
     }
-     
+
     [HttpGet]
     public ActionResult<IEnumerable<StatusDto>> GetStatus()
     {
-        var _status = _context.Status.ToList(); 
+        var _status = _context.Status.ToList();
         var result = _status.Select(ct => new StatusDto
         {
             Id = ct.Id,
@@ -31,7 +34,8 @@ public class StatusController : ControllerBase
     [Route("{id}")]
     public ActionResult<StatusDto> GetStatusById(int id)
     {
-        var status = _context.Status.FirstOrDefault(s => s.Id == id);
+        //var status = _context.ComplaintTypes.FirstOrDefault(s => s.Id == id);
+        var status = _repository.GetById(id);
         if (status == null)
         {
             return NotFound();
@@ -52,9 +56,7 @@ public class StatusController : ControllerBase
             Name = request.Name
         };
 
-
-        _context.Status.Add(status);
-        _context.SaveChanges();
+        _repository.Create(status);
 
         return Ok(new { Id = status.Id });
     }
@@ -63,7 +65,7 @@ public class StatusController : ControllerBase
     [Route("{id}")]
     public ActionResult UpdateStatus(int id, StatusDto updatedStatu)
     {
-        var status = _context.Status.FirstOrDefault(s => s.Id == id);
+        var status = _repository.GetById(id);
         if (status == null)
         {
             return NotFound();
@@ -71,8 +73,7 @@ public class StatusController : ControllerBase
 
         status.Name = updatedStatu.Name;
 
-        _context.Status.Update(status);
-        _context.SaveChanges();
+        _repository.Update(status);
         return NoContent();
     }
 
@@ -80,13 +81,13 @@ public class StatusController : ControllerBase
     [Route("{id}")]
     public ActionResult DeleteStatus(int id)
     {
-        var status = _context.Status.FirstOrDefault(s => s.Id == id);
+        var status = _repository.GetById(id);
         if (status == null)
         {
             return NotFound();
         }
-        _context.Status.Remove(status);
-        _context.SaveChanges();
+        _repository.Delete
+            (status);
         return NoContent();
     }
 

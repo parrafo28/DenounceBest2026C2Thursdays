@@ -1,31 +1,25 @@
-﻿using DenounceBeasts.Application.Models.Dtos;
+﻿using DenounceBeasts.API.Controllers;
+using DenounceBeasts.Application.Models.Dtos;
 using DenounceBeasts.Domain.Entities;
 using DenounceBeasts.Infraestructure;
 using DenounceBeasts.Infraestructure.Repositories;
-using Microsoft.AspNetCore.Mvc;
 
-namespace DenounceBeasts.API.Controllers;
+namespace DenounceBeasts.Application.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class ComplaintTypesController : BaseController
+public class ComplaintTypesService
 {
     private readonly GenericRepository<ComplaintType> _repository;
     private readonly UnitOfWork _unitOfWork;
 
-    //private readonly DataContext _context;
-    public ComplaintTypesController(DataContext dataContext,
+    public ComplaintTypesService(DataContext dataContext,
         GenericRepository<ComplaintType> repository,
-
-        UnitOfWork unitOfWork) : base(dataContext)
+        UnitOfWork unitOfWork)
     {
         this._repository = repository;
         this._unitOfWork = unitOfWork;
-        //_context = dataContext;
     }
 
-    [HttpGet]
-    public ActionResult<IEnumerable<ComplaintTypeDto>> GetComplaintTypes()
+    public IEnumerable<ComplaintTypeDto> GetComplaintTypes()
     {
         var _complaintTypes = _repository.GetAll();
         var response = _complaintTypes.Select(ct => new ComplaintTypeDto
@@ -33,29 +27,25 @@ public class ComplaintTypesController : BaseController
             Id = ct.Id,
             Name = ct.Name
         }).ToList();
-        //var response =  Mapper.Map<List<ComplaintTypeDto>>(_complaintTypes);
-        return Ok(response);
+       return response;
     }
 
-    [HttpGet]
-    [Route("{id}")]
-    public ActionResult<ComplaintTypeDto> GetComplaintTypeById(int id)
+    public  ComplaintTypeDto  GetComplaintTypeById(int id)
     {
         var complaintType = _repository.GetById(id);
         if (complaintType == null)
         {
-            return NotFound();
+            return null;
         }
         var respose = new ComplaintTypeDto
         {
             Id = complaintType.Id,
             Name = complaintType.Name
         };
-        return Ok(respose);
+        return respose;
     }
 
-    [HttpPost]
-    public ActionResult<int> CreateComplaintType(ComplaintTypeDto request)
+    public  int  CreateComplaintType(ComplaintTypeDto request)
     {
         var complaintType = new ComplaintType
         {
@@ -65,17 +55,15 @@ public class ComplaintTypesController : BaseController
         _repository.Create(complaintType);
         _unitOfWork.Complete();
 
-        return Ok(new { Id = complaintType.Id });
+        return  complaintType.Id  ;
     }
 
-    [HttpPut]
-    [Route("{id}")]
-    public ActionResult UpdateComplaintType(int id, ComplaintTypeDto updatedComplaintType)
+    public bool  UpdateComplaintType(int id, ComplaintTypeDto updatedComplaintType)
     {
         var complaintType = _repository.GetById(id);
         if (complaintType == null)
         {
-            return NotFound();
+            return false;
         }
 
         complaintType.Name = updatedComplaintType.Name;
@@ -83,22 +71,20 @@ public class ComplaintTypesController : BaseController
         _repository.Update(complaintType);
         _unitOfWork.Complete();
 
-        return NoContent();
+        return true;
     }
 
-    [HttpDelete]
-    [Route("{id}")]
-    public ActionResult DeleteComplaintType(int id)
+    public bool DeleteComplaintType(int id)
     {
         var complaintType = _repository.GetById(id);
         if (complaintType == null)
         {
-            return NotFound();
+            return false;
         }
         _repository.Delete(complaintType);
         _unitOfWork.Complete();
 
-        return NoContent();
+        return true;
     }
 
 
